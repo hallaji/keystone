@@ -376,6 +376,68 @@ module.exports = class Keystone {
         `${left.listKey}.${left.path} refers to a non-existant field, ${left.config.ref}`
       );
     }
+
+    Object.values(rels).forEach(rel => {
+      const { left, right } = rel;
+      let cardinality;
+      if (left.config.many) {
+        if (right) {
+          if (right.config.many) {
+            cardinality = 'N:N';
+          } else {
+            cardinality = '1:N';
+          }
+        } else {
+          // right not specified, have to assume that it's N:N
+          cardinality = 'N:N';
+        }
+      } else {
+        if (right) {
+          if (right.config.many) {
+            cardinality = 'N:1';
+          } else {
+            cardinality = '1:1';
+          }
+        } else {
+          // right not specified, have to assume that it's N:1
+          cardinality = 'N:1';
+        }
+      }
+      rel.cardinality = cardinality;
+
+      let tableName;
+      let columnName;
+      if (cardinality === 'N:N') {
+        tableName = right
+          ? `${left.listKey}_${left.path}_${right.listKey}_${right.path}`
+          : `${left.listKey}_${left.path}_many`;
+        if (right) {
+          rel.columnNames = {
+            [left.listKey]: { near: `${left.listKey}_id`, far: `${right.listKey}_id` },
+            [right.listKey]: { near: `${right.listKey}_id`, far: `${left.listKey}_id` },
+          };
+        } else {
+          rel.columnNames = {
+            [left.listKey]: { near: `${left.listKey}_id`, far: `${left.config.ref}_id` },
+            [left.config.ref]: { near: `${left.config.ref}_id`, far: `${left.listKey}_id` },
+          };
+        }
+      } else if (cardinality === '1:1') {
+        tableName = left.listKey;
+        columnName = left.path;
+      } else if (cardinality === '1:N') {
+        tableName = right.listKey;
+        columnName = right.path;
+      } else {
+        tableName = left.listKey;
+        columnName = left.path;
+      }
+      rel.tableName = tableName;
+      rel.columnName = columnName;
+    });
+
+    // I guess we win!
+    this.rels = Object.values(rels);
   }
 
   /**
@@ -383,7 +445,9 @@ module.exports = class Keystone {
    */
   connect() {
     const { adapters, name } = this;
-    return resolveAllKeys(mapKeys(adapters, adapter => adapter.connect({ name }))).then(() => {
+    return resolveAllKeys(
+      mapKeys(adapters, adapter => adapter.connect({ name, keystone: this }))
+    ).then(() => {
       if (this.eventHandlers.onConnect) {
         return this.eventHandlers.onConnect(this);
       }
