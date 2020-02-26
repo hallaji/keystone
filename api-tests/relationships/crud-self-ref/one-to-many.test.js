@@ -76,7 +76,7 @@ const createReadData = async keystone => {
       AB: [1, 3], //  -> [A, B]
       C: [5], //  -> [C]
       '': [], //  -> []
-    }).map(async ([name, locationIdxs], j) => {
+    }).map(async ([name, locationIdxs]) => {
       const ids = locationIdxs.map(i => ({ id: createUsers[i].id }));
       const { data } = await graphqlRequest({
         keystone,

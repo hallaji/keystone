@@ -61,7 +61,7 @@ const getUserAndFriend = async (keystone, userId, friendId) => {
 
 const createReadData = async keystone => {
   // create locations [A, A, B, B, C, C];
-  const { data, errors } = await graphqlRequest({
+  const { data } = await graphqlRequest({
     keystone,
     query: `mutation create($users: [UsersCreateInput]) { createUsers(data: $users) { id name } }`,
     variables: {
@@ -122,8 +122,8 @@ multiAdapterRunners().map(({ runner, adapterName }) =>
         });
       }
 
-      describe.only('Read', () => {
-        test.only(
+      describe('Read', () => {
+        test(
           '_some',
           runner(setupKeystone, async ({ keystone }) => {
             await createReadData(keystone);
