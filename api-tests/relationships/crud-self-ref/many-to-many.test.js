@@ -303,7 +303,7 @@ multiAdapterRunners().map(({ runner, adapterName }) =>
             })
           );
 
-          test.failing(
+          test(
             'With nested create',
             runner(setupKeystone, async ({ keystone }) => {
               const friendName = sampleOne(alphanumGenerator);
@@ -326,7 +326,7 @@ multiAdapterRunners().map(({ runner, adapterName }) =>
                 data.createUser.id,
                 data.createUser.friends[0].id
               );
-              console.log({ User, Friend });
+
               // Everything should now be connected
               expect(User.friends.map(({ id }) => id.toString())).toEqual([Friend.id.toString()]);
               expect(Friend.friendOf.length).toEqual(2);
