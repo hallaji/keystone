@@ -4,7 +4,6 @@ const { Text } = require('@keystonejs/fields');
 const { GraphQLApp } = require('@keystonejs/app-graphql');
 const { AdminUIApp } = require('@keystonejs/app-admin-ui');
 const { StaticApp } = require('@keystonejs/app-static');
-const { print } = require('graphql/language/printer');
 
 const keystone = new Keystone({
   name: 'Keystone To-Do List',
@@ -17,9 +16,6 @@ keystone.createList('Todo', {
     name: { type: Text, schemaDoc: 'This is the thing you need to do', isRequired: true },
   },
 });
-
-console.log(keystone.getTypeDefs({ schemaName: 'public' }).map(s => print(s)));
-console.log(keystone.getResolvers({ schemaName: 'public' }));
 
 module.exports = {
   keystone,
