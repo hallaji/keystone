@@ -42,8 +42,6 @@ const {
   VersionProvider,
 } = require('../providers');
 
-const debugGraphQLSchemas = () => !!process.env.DEBUG_GRAPHQL_SCHEMAS;
-
 module.exports = class Keystone {
   constructor({
     defaultAccess,
@@ -422,6 +420,13 @@ module.exports = class Keystone {
     return { lists, name: this.name };
   }
 
+  // It's not Keystone core's responsibility to create an executable schema, but
+  // once one is, Keystone wants to be able to expose the ability to query that
+  // schema, so this function enables other modules to register that function.
+  registerSchema(schemaName, schema) {
+    this._schemas[schemaName] = schema;
+  }
+
   getTypeDefs({ schemaName }) {
     const queries = unique(flatten(this._providers.map(p => p.getQueries({ schemaName }))));
     const mutations = unique(flatten(this._providers.map(p => p.getMutations({ schemaName }))));
@@ -436,7 +441,7 @@ module.exports = class Keystone {
       mutations.length > 0 && `type Mutation { ${mutations.join('\n')} }`,
     ]
       .filter(s => s)
-      .map(s => print(gql(s)));
+      .map(s => gql(s));
   }
 
   getResolvers({ schemaName }) {
@@ -458,25 +463,6 @@ module.exports = class Keystone {
     );
   }
 
-  // It's not Keystone core's responsibility to create an executable schema, but
-  // once one is, Keystone wants to be able to expose the ability to query that
-  // schema, so this function enables other modules to register that function.
-  registerSchema(schemaName, schema) {
-    this._schemas[schemaName] = schema;
-  }
-
-  getAdminSchema({ schemaName }) {
-    return {
-      typeDefs: this.getTypeDefs({ schemaName }).map(
-        typeDef =>
-          gql`
-            ${typeDef}
-          `
-      ),
-      resolvers: this.getResolvers({ schemaName }),
-    };
-  }
-
   dumpSchema(file, schemaName) {
     // The 'Upload' scalar is normally automagically added by Apollo Server
     // See: https://blog.apollographql.com/file-uploads-with-apollo-server-2-0-5db2f3f60675
@@ -484,7 +470,7 @@ module.exports = class Keystone {
     // reinsert it.
     const schema = `
       scalar Upload
-      ${this.getTypeDefs({ schemaName }).join('\n')}
+      ${this.getTypeDefs({ schemaName }).map(s=>print(s)).join('\n')}
     `;
     fs.writeFileSync(file, schema);
   }
