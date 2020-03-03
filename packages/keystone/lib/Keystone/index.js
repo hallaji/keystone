@@ -470,7 +470,9 @@ module.exports = class Keystone {
     // reinsert it.
     const schema = `
       scalar Upload
-      ${this.getTypeDefs({ schemaName }).map(s=>print(s)).join('\n')}
+      ${this.getTypeDefs({ schemaName })
+        .map(t => print(t))
+        .join('\n')}
     `;
     fs.writeFileSync(file, schema);
   }
