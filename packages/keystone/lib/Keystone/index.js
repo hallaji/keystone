@@ -441,7 +441,7 @@ module.exports = class Keystone {
       mutations.length > 0 && `type Mutation { ${mutations.join('\n')} }`,
     ]
       .filter(s => s)
-      .map(s => gql(s));
+      .map(s => print(gql(s)));
   }
 
   getResolvers({ schemaName }) {
@@ -470,9 +470,7 @@ module.exports = class Keystone {
     // reinsert it.
     const schema = `
       scalar Upload
-      ${this.getTypeDefs({ schemaName })
-        .map(t => print(t))
-        .join('\n')}
+      ${this.getTypeDefs({ schemaName }).join('\n')}
     `;
     fs.writeFileSync(file, schema);
   }
