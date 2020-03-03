@@ -1,5 +1,11 @@
 # @keystonejs/access-control
 
+## 5.2.0
+
+### Minor Changes
+
+- [`42497b8e`](https://github.com/keystonejs/keystone/commit/42497b8ebbaeaf0f4d7881dbb76c6abafde4cace) [#2456](https://github.com/keystonejs/keystone/pull/2456) Thanks [@timleslie](https://github.com/timleslie)! - Added `validateAuthAccessControl` as a special case for validating access control on authentication queries and mutations.
+
 ## 5.1.0
 
 ### Minor Changes
